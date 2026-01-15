@@ -1,11 +1,19 @@
 # temp files
 temp*
-
+images/*
 mc_loop
-__pycache__
 target
-images
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
 
 # secret
-scripts
 data/*
