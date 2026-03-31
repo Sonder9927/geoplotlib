@@ -2,7 +2,7 @@ from geoplotlib.gallery.base_fig import base2d_fig
 from geoplotlib.gmt import fig_annotation
 
 
-def plot_misfit(period, data, region, outfile, hull=None):
+def plot_stddev(period, data, region, outfile, hull=None):
     series = [0, 121, 1] if period < 100 else [0, 141, 1]
     cptinfo = {"cpt": "hot", "series": series, "reverse": True}
     # mk data

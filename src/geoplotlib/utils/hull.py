@@ -1,20 +1,23 @@
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 import xarray as xr
 from scipy.spatial import ConvexHull
 
 
-def mk_hull(sta_csv: str, region: List, outfile: str):
+def mk_hull(sta_csv: str, outfile: str, region: Optional[List] = None):
     df = pd.read_csv(sta_csv)
-    lon_min, lon_max, lat_min, lat_max = region
-    mask = (
-        (df["longitude"] >= lon_min)
-        & (df["longitude"] <= lon_max)
-        & (df["latitude"] >= lat_min)
-        & (df["latitude"] <= lat_max)
-    )
-    df_flt = df[mask]
+    if region:
+        lon_min, lon_max, lat_min, lat_max = region
+        mask = (
+            (df["longitude"] >= lon_min)
+            & (df["longitude"] <= lon_max)
+            & (df["latitude"] >= lat_min)
+            & (df["latitude"] <= lat_max)
+        )
+        df_flt = df[mask]
+    else:
+        df_flt = df
     if len(df_flt) < 3:
         raise ValueError("Stations in the region less than 3.")
 

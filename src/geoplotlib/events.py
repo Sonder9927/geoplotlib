@@ -37,18 +37,35 @@ def event_paths(eqlist_csv, evt_csv, sta_csv, region, outflag="tpwt"):
         # return
 
 
-def event_counts(eqlist_csv, iter_dispersions, outfile):
+def event_counts(eqlist_csv, phv_csv, outfile, *, ant_csv=None, iter_csv=None):
     df = pd.read_csv(eqlist_csv)
-    period_counts = df.groupby("period")["event"].size()
+    event_counts = df.groupby("period")["event"].size()
+    vdf = pd.read_csv(phv_csv)
+    tpwt_n2 = vdf.groupby("period")["phv"].mean()
 
     fig = mplt.figure(figsize=(10, 6))
     ax1 = fig.add_subplot(111)
-    ax1.bar(period_counts.index, period_counts.values)
+    ax1.bar(event_counts.index, event_counts.values)
     ax1.set_xlabel("period")
     ax1.set_ylabel("event counts")
-    for i, v in enumerate(period_counts.values):
-        ax1.text(period_counts.index[i], v + 0.1, str(v), ha="center")
+    for i, v in enumerate(event_counts.values):
+        ax1.text(event_counts.index[i], v + 0.1, str(v), ha="center")
     # ax1.tight_layout()
+
+    ax2 = ax1.twinx()
+    ax2.plot(tpwt_n2.index, tpwt_n2.values, "r", label="TPWT Phv")
+
+    if iter_csv:
+        vdf = pd.read_csv(iter_csv)
+        ax2.plot(vdf["period"], vdf["n0"], "b", label="TPWT N0")
+        ax2.plot(vdf["period"], vdf["n1"], "g", label="TPWT N1")
+    if ant_csv:
+        vdf = pd.read_csv(ant_csv)
+        ant_mean = vdf.groupby("period")["phv"].mean()
+        ax2.plot(ant_mean.index, ant_mean.values, "y", label="ANT Phv")
+
+    ax2.set_ylabel("Velocity")
+    ax2.legend(loc="upper right")
 
     fig.savefig(outfile)
 

@@ -136,7 +136,7 @@ def _diff_plot(period, topo, grds, zdiff, vcmap, dcmap, method1: str, outfile):
                 y=28,
                 justify="RT",
                 font="12p",
-                text=f"std = {round(zdiff.std(), 2)}m/s",
+                text=f"std = {round(zdiff.std(ddof=0), 2)}m/s",
                 offset="j0.1",
             )
             fig.colorbar(
