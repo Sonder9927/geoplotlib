@@ -5,7 +5,8 @@ from pathlib import Path
 _cpt_path = Path("data/cpts")
 
 
-def makecpt(series, cpt="Vc_1.8s.cpt", output="temp/temp.cpt", reverse=False) -> str:
+def makecpt(series, cpt=None, output="temp/temp.cpt", reverse=False) -> str:
+    cpt = cpt or "Vc_1.8s.cpt"
     tcpt = _cpt_path / cpt
     cmap = str(tcpt) if tcpt.exists() else cpt
 

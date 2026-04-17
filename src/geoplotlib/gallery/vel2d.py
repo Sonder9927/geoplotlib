@@ -153,10 +153,15 @@ def plot_diff(period, data1, data2, method1, region, outfile, hull=None):
     _diff_plot(period, topo, grds, zdiff, vcmap, dcmap, method1, outfile)
 
 
-def plot_phv2d(period, data, region, outfile, *, series=None, sta_csv=None, hull=None):
-    fig = base2d_fig(
-        data, region, cptinfo={"cpt": VCPT, "series": series, "dseries": 7}, hull=hull
-    )
+def plot_phv2d(
+    period, data, region, outpath, *, series=None, sta_csv=None, hull=None, ave=False
+):
+    cptinfo = {"cpt": VCPT, "series": series, "dseries": 7}
+    if ave:
+        cptinfo["series"] = [-2.6, 2.6, 1]
+        data = data_avg(data, hull, col="phv")
+        outpath = outpath.with_suffix(".ave.png")
+    fig = base2d_fig(data, region, cptinfo=cptinfo, hull=hull)
     # tects
     # station
     if sta_csv:
@@ -164,4 +169,23 @@ def plot_phv2d(period, data, region, outfile, *, series=None, sta_csv=None, hull
     # volcation
     # period annotation
     fig_annotation(fig, x=region[0], y=region[-1], text=f"{period}s")
-    fig.savefig(outfile)
+    fig.savefig(str(outpath))
+
+
+def plot_vs2d(
+    depth, data, region, outpath, *, series=None, sta_csv=None, hull=None, ave=False
+):
+    cptinfo = {"cpt": VCPT, "series": series, "dseries": 7}
+    if ave:
+        cptinfo["series"] = [-5, 5, 1]
+        data = data_avg(data, hull, col="vs")
+        outpath = outpath.with_suffix(".ave.png")
+    fig = base2d_fig(data, region, cptinfo=cptinfo, hull=hull)
+    # tects
+    # station
+    if sta_csv:
+        fig_stations(fig, sta_csv)
+    # volcation
+    # period annotation
+    fig_annotation(fig, x=region[0], y=region[-1], text=f"{depth}km")
+    fig.savefig(str(outpath))

@@ -4,7 +4,7 @@ import pandas as pd
 from tqdm import tqdm
 import pygmt
 
-from geoplotlib.gallery.stddev import plot_stddev
+from geoplotlib.gallery.measurement import plot_stddev
 from geoplotlib.gallery.vel2d import plot_diff, plot_phv2d
 from geoplotlib.gallery.dispersion import plot_dispersion
 
@@ -42,7 +42,9 @@ def diff(period, csv1, csv2, region, hull=None, method1="method1"):
     )
 
 
-def phvs(phv_csv, region, outflag="tpwt", sta_csv=None, hull=None, auto_series=True):
+def phvs(
+    phv_csv, region, outflag="tpwt", sta_csv=None, hull=None, auto_series=True, ave=True
+):
     df = pd.read_csv(phv_csv)
     outdir = Path(f"images/{outflag}")
     outdir.mkdir(exist_ok=True, parents=True)
@@ -55,10 +57,11 @@ def phvs(phv_csv, region, outflag="tpwt", sta_csv=None, hull=None, auto_series=T
             period,
             idata,
             region,
-            str(outpath),
+            outpath,
             sta_csv=sta_csv,
             series=series,
             hull=hull,
+            ave=ave,
         )
         ii += 1
         # return
@@ -82,7 +85,7 @@ def stddevs(phv_csv, region, outflag="tpwt", hull=None):
 def checkboards(phv_csv, region, dcheck, outflag="tpwt", hull=None):
     df = pd.read_csv(phv_csv)
     outdir = Path(f"images/{outflag}")
-    outdir.mkdir(exist_ok=True)
+    outdir.mkdir(parents=True, exist_ok=True)
     for period, idf in tqdm(df.groupby("period")):
         outpath = outdir / f"cb{dcheck}_{outflag}_{period}s.png"
         idata = idf[["longitude", "latitude", f"cb{dcheck}"]]
@@ -96,10 +99,8 @@ def dispersions(tpwt_phv_csv, ant_phv_csv, region, hull=None, interp=True):
 
     tpwt_phv = pd.read_csv(tpwt_phv_csv)
     ant_phv = pd.read_csv(ant_phv_csv)
-    # ant_phv = _interp(ant_phv, tpwt_points)
     ant_phv = _gmt_surface(ant_phv, region)
     # ant_phv.to_csv("fmst_phv-d5.csv", index=False)
-    # raise
 
     tpwt_points = (
         tpwt_phv[["longitude", "latitude"]].drop_duplicates().reset_index(drop=True)
@@ -132,29 +133,3 @@ def _gmt_surface(df, region):
     data_df = pd.concat(data_lst, ignore_index=True)
     data_df.columns = ["longitude", "latitude", "phv", "period"]
     return data_df
-
-
-def _interp(df, target_points):
-    import numpy as np
-    from scipy.interpolate import griddata
-
-    periods = df["period"].unique()
-    interp_list = []
-
-    for period in periods:
-        df_per = df[df["period"] == period]
-        df_points = df_per[["longitude", "latitude"]].values
-        values = df_per["phv"].values
-
-        xi = target_points[["longitude", "latitude"]].values
-        phv_interp = griddata(df_points, values, xi, method="linear", fill_value=np.nan)
-
-        for i, row in target_points.iterrows():
-            interp_list.append({
-                "latitude": row["latitude"],
-                "longitude": row["longitude"],
-                "period": period,
-                "phv": phv_interp[i],
-            })
-    dest_df = pd.DataFrame(interp_list).dropna(subset=["phv"])
-    return dest_df
